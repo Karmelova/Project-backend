@@ -11,6 +11,7 @@ namespace WebAPI
         public DbSet<QuizItem> QuizItems { get; set; }
         public DbSet<QuizItemUserAnswer> UserAnswers { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Project> Projects { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -37,6 +37,21 @@ namespace WebAPI.Configuration
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+            var serviceProvider = services.BuildServiceProvider();
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<UserRole>>();
+                if (!roleManager.RoleExistsAsync("ADMIN").Result)
+                {
+                    var adminRole = new UserRole { Name = "ADMIN" };
+                    roleManager.CreateAsync(adminRole).Wait();
+                }
+                if (!roleManager.RoleExistsAsync("USER").Result)
+                {
+                    var adminRole = new UserRole { Name = "USER" };
+                    roleManager.CreateAsync(adminRole).Wait();
+                }
+            }
         }
 
         public static void ConfigureJWT(this IServiceCollection services, JwtSettings jwtSettings)
@@ -112,12 +127,20 @@ namespace WebAPI.Configuration
             {
                 var userManager = scope.ServiceProvider.GetService<UserManager<UserEntity>>();
                 var find = await userManager.FindByEmailAsync("administrator@admin.pl");
+                var findUser = await userManager.FindByEmailAsync("user@test.com");
                 if (find == null)
                 {
                     UserEntity user = new UserEntity() { Email = "administrator@admin.pl", UserName = "admin" };
 
                     var saved = await userManager?.CreateAsync(user, "!Administrator123");
                     userManager.AddToRoleAsync(user, "ADMIN");
+                }
+                if (findUser == null)
+                {
+                    UserEntity user = new UserEntity() { Email = "user@test.com", UserName = "user" };
+
+                    var saved = await userManager?.CreateAsync(user, "!User123");
+                    userManager.AddToRoleAsync(user, "USER");
                 }
             }
         }

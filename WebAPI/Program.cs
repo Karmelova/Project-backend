@@ -1,4 +1,5 @@
 using ApplicationCore.Interfaces;
+using ApplicationCore.Interfaces.ProjectService;
 using ApplicationCore.Interfaces.Repository;
 using ApplicationCore.Models;
 using Infrastructure.Memory.Repository;
@@ -20,6 +21,7 @@ builder.Services.AddSingleton<IGenericRepository<QuizItem, int>, MemoryGenericRe
 builder.Services.AddSingleton<IGenericRepository<Quiz, int>, MemoryGenericRepository<Quiz, int>>();
 builder.Services.AddSingleton<IGenericRepository<QuizItemUserAnswer, string>, MemoryGenericRepository<QuizItemUserAnswer, string>>();
 builder.Services.AddSingleton<JwtSettings>();
+builder.Services.AddSingleton<Project>();
 builder.Services.ConfigureIdentity();
 builder.Services.ConfigureJWT(new JwtSettings(builder.Configuration));
 builder.Services.ConfigureCors();
@@ -61,7 +63,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddDbContext<ApplicationDbContext>();                             // infrastructure
-builder.Services.AddTransient<IQuizUserService, QuizUserServiceEF>();       // infrastructure
+builder.Services.AddTransient<IQuizUserService, QuizUserServiceEF>();
+builder.Services.AddTransient<IProjectService, ProjectServiceEF>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

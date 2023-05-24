@@ -1,6 +1,7 @@
 ﻿using Infrastructure.EF.Entities;
 using JWT.Algorithms;
 using JWT.Builder;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -72,7 +73,7 @@ namespace WebAPI.Controllers
             };
 
             var result = await _manager.CreateAsync(user, userDto.Password);
-
+            _manager.AddToRoleAsync(user, "USER");
             if (result.Succeeded)
             {
                 return Ok();
@@ -80,6 +81,35 @@ namespace WebAPI.Controllers
             else
             {
                 // Registration failed, return appropriate error response
+                var errors = result.Errors.Select(error => error.Description);
+                return BadRequest(errors);
+            }
+        }
+
+        [HttpDelete("users/{userId}")]
+        [Authorize(Policy = "Bearer")]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            var user = await _manager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var isAdmin = await _manager.IsInRoleAsync(user, "ADMIN");
+            if (!isAdmin)
+            {
+                return Forbid();
+            }
+
+            var result = await _manager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                // Failed to delete user, return appropriate error response
                 var errors = result.Errors.Select(error => error.Description);
                 return BadRequest(errors);
             }
