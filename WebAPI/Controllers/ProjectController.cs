@@ -48,6 +48,58 @@ namespace WebAPI.Controllers
 
             return Ok(project);
         }
+
+        [HttpPut("{id:int}")]
+        [Authorize(Policy = "Bearer")]
+        public async Task<IActionResult> UpdateProject(int id, [FromBody] ProjectDto projectDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var project = _context.Projects.Find(id);
+            if (project != null)
+            {
+                project.Name = projectDto.Name;
+                project.Description = projectDto.Description;
+                await _context.SaveChangesAsync();
+                return Ok(project);
+            }
+            return NotFound();
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Policy = "Bearer")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> DeleteProject(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var project = _context.Projects.Find(id);
+            if (project != null)
+            {
+                _context.Projects.Remove(project);
+                await _context.SaveChangesAsync();
+                return Ok("Project hes been removed from database");
+            }
+            return NotFound();
+        }
+
+        //[HttpGet("{id:int}")]
+        //public async Task<IActionResult> GetProjectById(int id)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+        //    var find = await _context.Projects.FirstOrDefaultAsync(id);
+
+        //    return Ok(project);
+        //}
     }
 
     //public ProjectController(IProjectService projectService)
@@ -97,42 +149,5 @@ namespace WebAPI.Controllers
     //    }
 
     //    return Ok(project);
-    //}
-
-    //[HttpPut("{id}")]
-    //public IActionResult UpdateProject(int id, [FromBody] ProjectDto projectDto)
-    //{
-    //    if (projectDto == null)
-    //    {
-    //        return BadRequest();
-    //    }
-
-    //    var project = _projectService.GetById(id);
-    //    if (project == null)
-    //    {
-    //        return NotFound();
-    //    }
-
-    //    project.Name = projectDto.Name;
-    //    project.Description = projectDto.Description;
-
-    //    _projectService.Update(project);
-
-    //    return Ok();
-    //}
-
-    //[HttpDelete("{id}")]
-    //public IActionResult DeleteProject(int id)
-    //{
-    //    var project = _projectService.GetById(id);
-    //    if (project == null)
-    //    {
-    //        return NotFound();
-    //    }
-
-    //    _projectService.Delete(project);
-    //    _projectService.Delete(project);
-
-    //    return Ok();
     //}
 }

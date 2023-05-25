@@ -88,18 +88,13 @@ namespace WebAPI.Controllers
 
         [HttpDelete("users/{userId}")]
         [Authorize(Policy = "Bearer")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             var user = await _manager.FindByIdAsync(userId);
             if (user == null)
             {
                 return NotFound();
-            }
-
-            var isAdmin = await _manager.IsInRoleAsync(user, "ADMIN");
-            if (!isAdmin)
-            {
-                return Forbid();
             }
 
             var result = await _manager.DeleteAsync(user);

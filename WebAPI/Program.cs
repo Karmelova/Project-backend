@@ -4,10 +4,8 @@ using ApplicationCore.Interfaces.Repository;
 using ApplicationCore.Models;
 using Infrastructure.Memory.Repository;
 using Microsoft.OpenApi.Models;
-using Web;
 using WebAPI;
 using WebAPI.Configuration;
-using WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,9 +15,6 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<IGenericRepository<QuizItem, int>, MemoryGenericRepository<QuizItem, int>>();
-builder.Services.AddSingleton<IGenericRepository<Quiz, int>, MemoryGenericRepository<Quiz, int>>();
-builder.Services.AddSingleton<IGenericRepository<QuizItemUserAnswer, string>, MemoryGenericRepository<QuizItemUserAnswer, string>>();
 builder.Services.AddSingleton<JwtSettings>();
 builder.Services.AddSingleton<Project>();
 builder.Services.ConfigureIdentity();
@@ -63,8 +58,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddDbContext<ApplicationDbContext>();                             // infrastructure
-builder.Services.AddTransient<IQuizUserService, QuizUserServiceEF>();
-builder.Services.AddTransient<IProjectService, ProjectServiceEF>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -76,9 +69,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.AddUsers();
-app.Seed();
 app.Run();
