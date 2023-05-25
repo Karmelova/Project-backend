@@ -1,5 +1,4 @@
 using ApplicationCore.Interfaces;
-using ApplicationCore.Interfaces.ProjectService;
 using ApplicationCore.Interfaces.Repository;
 using ApplicationCore.Models;
 using Infrastructure.Memory.Repository;
@@ -54,7 +53,7 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "Quiz API",
+        Title = "TeamMinder API",
     });
 });
 builder.Services.AddDbContext<ApplicationDbContext>();                             // infrastructure

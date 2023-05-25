@@ -7,7 +7,6 @@ namespace WebAPI
 {
     public class ApplicationDbContext : IdentityDbContext<UserEntity, UserRole, int>
     {
-        public DbSet<User> Users { get; set; }
         public DbSet<Project> Projects { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

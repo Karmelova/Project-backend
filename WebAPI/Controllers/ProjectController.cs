@@ -1,10 +1,12 @@
 ﻿using ApplicationCore.Models;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Dto;
-using ApplicationCore.Interfaces.ProjectService;
 using Infrastructure.EF.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using WebAPI.Security;
 
 namespace WebAPI.Controllers
 {
@@ -13,10 +15,12 @@ namespace WebAPI.Controllers
     public class ProjectController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<UserEntity> _manager;
 
-        public ProjectController(ApplicationDbContext context)
+        public ProjectController(ApplicationDbContext context, UserManager<UserEntity> manager)
         {
             _context = context;
+            _manager = manager;
         }
 
         [HttpGet]
@@ -26,7 +30,17 @@ namespace WebAPI.Controllers
         {
             return Ok(await _context.Projects.ToListAsync());
         }
-
+        [HttpGet("{id}")]
+        [Authorize(Policy = "Bearer")]
+        public async Task<IActionResult> GetProjectById(int id)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project != null)
+            {
+                return Ok(project);
+            }
+            return NotFound();
+        }
         [HttpPost]
         [Authorize(Policy = "Bearer")]
         [Route("add")]
@@ -78,6 +92,15 @@ namespace WebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+
+            var currentUserId = JwtTokenHelper.GetUserIdFromToken(token);
+            bool isAdmin = await JwtTokenHelper.IsAdminUserAsync(currentUserId, _manager);
+            if (!isAdmin)
+            {
+                return Forbid(); // User is not authorized to delete
+            }
             var project = _context.Projects.Find(id);
             if (project != null)
             {
@@ -87,66 +110,5 @@ namespace WebAPI.Controllers
             }
             return NotFound();
         }
-
-        //[HttpGet("{id:int}")]
-        //public async Task<IActionResult> GetProjectById(int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //    var find = await _context.Projects.FirstOrDefaultAsync(id);
-
-        //    return Ok(project);
-        //}
     }
-
-    //public ProjectController(IProjectService projectService)
-    //{
-    //    _projectService = projectService;
-    //}
-
-    //[HttpPost]
-    //public ActionResult CreateProject([FromBody] ProjectDto projectDto)
-    //{
-    //    if (projectDto == null)
-    //    {
-    //        return BadRequest();
-    //    }
-
-    //    var project = new Project
-    //    {
-    //        Name = projectDto.Name,
-    //        Description = projectDto.Description
-    //    };
-
-    //    _projectService.Create(project);
-
-    //    return Ok();
-    //}
-    //public async Task<IActionResult> CreateProject([FromBody] ProjectDto project)
-    //{
-    //    if (!ModelState.IsValid)
-    //    {
-    //        return Unauthorized();
-    //    }
-    //    var logged = await _manager.FindByNameAsync(user.LoginName);
-    //    if (await _manager.CheckPasswordAsync(logged, user.Password))
-    //    {
-    //        return Ok(new { Token = CreateToken(logged) });
-    //    }
-    //    return Unauthorized();
-    //}
-
-    //[HttpGet("{id}")]
-    //public ActionResult<ProjectDto> GetProjectById(int id)
-    //{
-    //    var project = _projectService.GetById(id);
-    //    if (project == null)
-    //    {
-    //        return NotFound();
-    //    }
-
-    //    return Ok(project);
-    //}
 }

@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using WebAPI.Configuration;
 using WebAPI.Dto;
+using WebAPI.Security;
 
 namespace WebAPI.Controllers
 {
@@ -52,6 +54,7 @@ namespace WebAPI.Controllers
                 .AddClaim(JwtRegisteredClaimNames.Email, user.Email)
                 .AddClaim(JwtRegisteredClaimNames.Exp, DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds())
                 .AddClaim(JwtRegisteredClaimNames.Jti, Guid.NewGuid())
+                .AddClaim(ClaimTypes.NameIdentifier, user.Id)
                 .Audience(_jwtSettings.Audience)
                 .Issuer(_jwtSettings.Issuer)
                 .Encode();
@@ -88,7 +91,6 @@ namespace WebAPI.Controllers
 
         [HttpDelete("users/{userId}")]
         [Authorize(Policy = "Bearer")]
-        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             var user = await _manager.FindByIdAsync(userId);
@@ -96,11 +98,24 @@ namespace WebAPI.Controllers
             {
                 return NotFound();
             }
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
 
+            var currentUserId = JwtTokenHelper.GetUserIdFromToken(token);
+            if (currentUserId == userId)
+            {
+                return Forbid(); // User is not authorized to delete
+            }
+
+            bool isAdmin = await JwtTokenHelper.IsAdminUserAsync(currentUserId, _manager);
+            if (!isAdmin)
+            {
+                return Forbid(); // User is not authorized to delete
+            }
             var result = await _manager.DeleteAsync(user);
             if (result.Succeeded)
             {
-                return Ok();
+                return Ok("User was deleted succesfully");
             }
             else
             {
