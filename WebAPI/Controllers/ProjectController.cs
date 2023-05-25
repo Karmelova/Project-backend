@@ -71,7 +71,6 @@ namespace WebAPI.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Policy = "Bearer")]
-        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteProject(int id)
         {
             if (!ModelState.IsValid)

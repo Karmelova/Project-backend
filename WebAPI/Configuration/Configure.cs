@@ -51,6 +51,14 @@ namespace WebAPI.Configuration
                 {
                     policy.RequireClaim("email");
                 });
+                opt.AddPolicy("AdminOnly", policy =>
+                {
+                    policy.RequireRole("ADMIN");
+                });
+                opt.AddPolicy("UserOnly", policy =>
+                {
+                    policy.RequireRole("USER");
+                });
             });
             services
                 .AddAuthentication(opt =>
