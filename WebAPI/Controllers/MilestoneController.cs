@@ -33,10 +33,7 @@ namespace WebAPI.Controllers
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> GetMilestones()
         {
-            var milestones = await _context.Milestones
-                .Include(m => m.TaskItems)
-                .ToListAsync();
-
+            var milestones = await _context.Milestones.ToListAsync();
             return Ok(milestones);
         }
 

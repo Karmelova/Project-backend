@@ -35,11 +35,7 @@ namespace WebAPI.Controllers
         [Route("all")]
         public async Task<IActionResult> GetProjects()
         {
-            var projects = await _context.Projects
-                .Include(p => p.Milestones)
-                .ToListAsync();
-
-            return Ok(projects);
+            return Ok(await _context.Projects.ToListAsync());
         }
 
         /// <summary>
