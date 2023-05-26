@@ -10,6 +10,10 @@ namespace WebAPI.Configuration
 {
     public static class Configure
     {
+        /// <summary>
+        /// Configures Cross-Origin Resource Sharing (CORS) policy allowing requests from any origin, method, and header.
+        /// </summary>
+        /// <param name="services">IServiceCollection instance.</param>
         public static void ConfigureCors(this IServiceCollection services)
         {
             services.AddCors(options =>
@@ -24,6 +28,10 @@ namespace WebAPI.Configuration
             });
         }
 
+        /// <summary>
+        /// Configures Identity with the specified options.
+        /// </summary>
+        /// <param name="services">IServiceCollection instance.</param>
         public static void ConfigureIdentity(this IServiceCollection services)
         {
             services
@@ -39,6 +47,11 @@ namespace WebAPI.Configuration
                 .AddDefaultTokenProviders();
         }
 
+        /// <summary>
+        /// Configures JWT authentication and authorization using the provided JwtSettings.
+        /// </summary>
+        /// <param name="services">IServiceCollection instance.</param>
+        /// <param name="jwtSettings">JwtSettings instance containing JWT configuration.</param>
         public static void ConfigureJWT(this IServiceCollection services, JwtSettings jwtSettings)
         {
             services.AddAuthorization(opt =>
@@ -114,6 +127,10 @@ namespace WebAPI.Configuration
                 });
         }
 
+        /// <summary>
+        /// Adds predefined users (admin and user) if they do not exist in the UserManager and RoleManager.
+        /// </summary>
+        /// <param name="app">WebApplication instance.</param>
         public static async void AddUsers(this WebApplication app)
         {
             using (var scope = app.Services.CreateScope())

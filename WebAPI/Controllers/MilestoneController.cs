@@ -9,6 +9,9 @@ using WebAPI.Security;
 
 namespace WebAPI.Controllers
 {
+    /// <summary>
+    /// Controller for managing milestones.
+    /// </summary>
     [ApiController]
     [Route("api/milestones")]
     public class MilestoneController : ControllerBase
@@ -22,15 +25,26 @@ namespace WebAPI.Controllers
             _manager = manager;
         }
 
+        /// <summary>
+        /// Retrieves all milestones.
+        /// </summary>
+        /// <returns>A list of milestone DTOs.</returns>
         [HttpGet("all")]
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> GetMilestones()
         {
-            var milestones = await _context.Milestones.ToListAsync();
-            var milestoneDtos = milestones.Select(MapToDto).ToList();
-            return Ok(milestoneDtos);
+            var milestones = await _context.Milestones
+                .Include(m => m.TaskItems)
+                .ToListAsync();
+
+            return Ok(milestones);
         }
 
+        /// <summary>
+        /// Retrieves a milestone by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the milestone.</param>
+        /// <returns>The milestone DTO.</returns>
         [HttpGet("{id}")]
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> GetMilestone(int id)
@@ -43,9 +57,14 @@ namespace WebAPI.Controllers
             }
 
             var milestoneDto = MapToDto(milestone);
-            return Ok(milestoneDto);
+            return Ok(milestone);
         }
 
+        /// <summary>
+        /// Creates a new milestone.
+        /// </summary>
+        /// <param name="milestoneDto">The milestone DTO containing the milestone data.</param>
+        /// <returns>The created milestone DTO.</returns>
         [HttpPost("create")]
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> CreateMilestone(MilestoneDto milestoneDto)
@@ -57,6 +76,7 @@ namespace WebAPI.Controllers
 
             var milestone = new Milestone
             {
+                Id = milestoneDto.Id,
                 Name = milestoneDto.Name,
                 Description = milestoneDto.Description,
                 ProjectId = milestoneDto.ProjectId
@@ -65,8 +85,15 @@ namespace WebAPI.Controllers
             _context.Milestones.Add(milestone);
             await _context.SaveChangesAsync();
 
-            return Ok(milestoneDto);
+            return Ok(milestone);
         }
+
+        /// <summary>
+        /// Updates an existing milestone.
+        /// </summary>
+        /// <param name="id">The ID of the milestone to update.</param>
+        /// <param name="milestoneDto">The milestone DTO containing the updated milestone data.</param>
+        /// <returns>No content if the update is successful, NotFound if the milestone is not found, or BadRequest if the ID in the URL does not match the ID in the DTO.</returns>
 
         [HttpPut("{id}")]
         [Authorize(Policy = "Bearer")]
@@ -109,6 +136,16 @@ namespace WebAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes a milestone.
+        /// </summary>
+        /// <param name="id">The ID of the milestone to delete.</param>
+        /// <returns>
+        /// Ok with the deleted milestone DTO if the deletion is successful,
+        /// NotFound if the milestone is not found,
+        /// Forbid if the current user is not authorized to delete,
+        /// or BadRequest if the deletion fails.
+        /// </returns>
         [HttpDelete("{id}")]
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> DeleteMilestone(int id)
@@ -132,7 +169,7 @@ namespace WebAPI.Controllers
             await _context.SaveChangesAsync();
 
             var milestoneDto = MapToDto(milestone);
-            return Ok(milestoneDto);
+            return Ok(milestone);
         }
 
         private bool MilestoneExists(int id)

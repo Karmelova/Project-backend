@@ -10,6 +10,9 @@ using WebAPI.Security;
 
 namespace WebAPI.Controllers
 {
+    /// <summary>
+    /// Controller for managing projects.
+    /// </summary>
     [ApiController]
     [Route("api/projects")]
     public class ProjectController : ControllerBase
@@ -23,13 +26,27 @@ namespace WebAPI.Controllers
             _manager = manager;
         }
 
+        /// <summary>
+        /// Retrieves all projects.
+        /// </summary>
+        /// <returns>A list of projects.</returns>
         [HttpGet]
         [Authorize(Policy = "Bearer")]
         [Route("all")]
         public async Task<IActionResult> GetProjects()
         {
-            return Ok(await _context.Projects.ToListAsync());
+            var projects = await _context.Projects
+                .Include(p => p.Milestones)
+                .ToListAsync();
+
+            return Ok(projects);
         }
+
+        /// <summary>
+        /// Retrieves a project by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the project.</param>
+        /// <returns>The project.</returns>
         [HttpGet("{id}")]
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> GetProjectById(int id)
@@ -41,6 +58,12 @@ namespace WebAPI.Controllers
             }
             return NotFound();
         }
+
+        /// <summary>
+        /// Adds a new project.
+        /// </summary>
+        /// <param name="projectDto">The project DTO containing the project data.</param>
+        /// <returns>The created project.</returns>
         [HttpPost]
         [Authorize(Policy = "Bearer")]
         [Route("add")]
@@ -63,6 +86,16 @@ namespace WebAPI.Controllers
             return Ok(project);
         }
 
+        /// <summary>
+        /// Updates an existing project.
+        /// </summary>
+        /// <param name="id">The ID of the project to update.</param>
+        /// <param name="projectDto">The project DTO containing the updated project data.</param>
+        /// <returns>
+        /// The updated project if the update is successful,
+        /// NotFound if the project is not found,
+        /// or BadRequest if the update fails.
+        /// </returns>
         [HttpPut("{id:int}")]
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> UpdateProject(int id, [FromBody] ProjectDto projectDto)
@@ -83,6 +116,16 @@ namespace WebAPI.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Deletes a project.
+        /// </summary>
+        /// <param name="id">The ID of the project to delete.</param>
+        /// <returns>
+        /// Ok with a success message if the deletion is successful,
+        /// NotFound if the project is not found,
+        /// Forbid if the current user is not authorized to delete,
+        /// or BadRequest if the deletion fails.
+        /// </returns>
         [HttpDelete("{id}")]
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> DeleteProject(int id)

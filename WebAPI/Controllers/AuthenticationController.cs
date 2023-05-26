@@ -14,6 +14,9 @@ using WebAPI.Security;
 
 namespace WebAPI.Controllers
 {
+    /// <summary>
+    /// Controller responsible for authentication-related actions.
+    /// </summary>
     [ApiController, Route("/api/authentication")]
     public class AuthenticationController : ControllerBase
     {
@@ -28,6 +31,11 @@ namespace WebAPI.Controllers
             _jwtSettings = jwtSettings;
         }
 
+        /// <summary>
+        /// Authenticates a user by generating and returning a JWT token.
+        /// </summary>
+        /// <param name="user">User credentials.</param>
+        /// <returns>JWT token if authentication is successful, otherwise Unauthorized.</returns>
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Authenticate([FromBody] LoginUserDto user)
@@ -44,6 +52,11 @@ namespace WebAPI.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Creates a JWT token for the specified user.
+        /// </summary>
+        /// <param name="user">User entity.</param>
+        /// <returns>JWT token.</returns>
         private string CreateToken(UserEntity user)
         {
             return new JwtBuilder()
@@ -60,6 +73,11 @@ namespace WebAPI.Controllers
                 .Encode();
         }
 
+        /// <summary>
+        /// Registers a new user.
+        /// </summary>
+        /// <param name="userDto">User information.</param>
+        /// <returns>Ok if registration is successful, otherwise BadRequest with errors.</returns>
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto userDto)
@@ -89,6 +107,11 @@ namespace WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a user.
+        /// </summary>
+        /// <param name="userId">User ID.</param>
+        /// <returns>Ok if deletion is successful, NotFound if user is not found, Forbid if user is not authorized, or BadRequest with errors.</returns>
         [HttpDelete("users/{userId}")]
         [Authorize(Policy = "Bearer")]
         public async Task<IActionResult> DeleteUser(string userId)
