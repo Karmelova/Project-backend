@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace WebAPI.Dto
 {
-    public class ProjectDto
+    public class MilestoneDto
     {
         public int Id { get; }
 
@@ -12,5 +12,8 @@ namespace WebAPI.Dto
 
         [AllowNull]
         public string Description { get; set; }
+
+        [Required, NotNull]
+        public int ProjectId { get; set; }
     }
 }

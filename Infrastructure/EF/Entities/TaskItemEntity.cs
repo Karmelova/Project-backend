@@ -1,4 +1,4 @@
-﻿using ApplicationCore.Interfaces.Repository;
+﻿using ApplicationCore.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -7,19 +7,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApplicationCore.Models
+namespace Infrastructure.EF.Entities
 {
-    public class Project
+    public class TaskItemEntity
     {
-        [Key]
         public int Id { get; set; }
 
-        [Required]
         public string Name { get; set; }
 
-        [AllowNull]
         public string Description { get; set; }
 
-        public List<Milestone> Milestones { get; set; }
+        public Priority Priority { get; set; }
+
+        public int MilestoneId { get; set; }
+        public Milestone Milestone { get; set; }
     }
 }
